@@ -46,7 +46,9 @@ func main() {
 
 	var piEstimates []float64
 	for i := 0; i < *concurrencyCountPtr; i++ {
-		piEstimates = append(piEstimates, <-sink)
+		est := <-sink
+		piEstimates = append(piEstimates, est)
+		fmt.Printf("Estimate from thread #%d: %.10f\n", i, est)
 	}
 
 	piApprox := avg(piEstimates...)
