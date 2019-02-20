@@ -11,17 +11,17 @@ func newSource() func() int {
 }
 
 func main() {
-    fmt.Println("Printing from tow difference sources")
+	fmt.Println("Printing from tow difference sources")
 
-    source1 := newSource()
-    source2 := newSource()
+	source1 := newSource()
+	source2 := newSource()
 
-    fmt.Println(source1())
-    fmt.Println(source2())
+	fmt.Println(source1())
+	fmt.Println(source2())
 
-    fmt.Println(source1())
-    fmt.Println(source2()) 
+	fmt.Println(source1())
+	fmt.Println(source2())
 
-    fmt.Println(source1())
-    fmt.Println(source2())
+	fmt.Println(source1())
+	fmt.Println(source2())
 }
