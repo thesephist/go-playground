@@ -17,7 +17,7 @@ func main() {
 	go say("Hello", sink1)
 	go say("Goodbye!", sink2)
 
-    // non-deterministic thread scheduling!
+	// non-deterministic thread scheduling!
 	select {
 	case msg := <-sink1:
 		fmt.Println("From sink 1:", msg)
