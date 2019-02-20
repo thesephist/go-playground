@@ -24,8 +24,19 @@ func main() {
 		"three": "third",
 		"four":  "fourth",
 		"five":  "fifth",
+		"six":   "sixth",
 	}
-    for k, val := range m {
+	for k, val := range m {
 		fmt.Printf("%s in ordinal is -> %s\n", k, val)
-    }
+	}
+
+	// detect if present
+	val, present := m["six"]
+	fmt.Println(val, "is present?", present)
+
+	// delete key
+	delete(m, "six")
+
+	val, present = m["six"]
+	fmt.Println(val, "is present?", present)
 }
