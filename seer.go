@@ -11,7 +11,7 @@ import (
 const ANSI_BOLD string = "\033[1m"
 const ANSI_END string = "\033[0m"
 const ANSI_UNDER string = "\033[4m"
-const ANSI_COLOR string = "\u001b[31m"
+const ANSI_COLOR string = "\u001b[31m" // ANSI red escape
 
 type row struct {
 	header          []string // pointer to the header row string slice
@@ -33,7 +33,6 @@ func searchCSV(source io.Reader) (rows []row, err error) {
 	for {
 		n, err := source.Read(buf)
 
-		// parse lines
 		for _, char := range buf[:n] {
 			switch char {
 			case '\\': // escape character
@@ -90,21 +89,21 @@ func check(e error) {
 }
 
 func clip(s string, max int) string {
-    if max > len(s) {
-        return s
-    } else {
-        return s[:max]
-    }
+	if max > len(s) {
+		return s
+	} else {
+		return s[:max]
+	}
 }
 
 func (r row) String() string {
 	result := ANSI_UNDER + "Line " + strconv.Itoa(r.startLineNumber) + ":\n" + ANSI_END
 	for idx, str := range r.values {
 		if str != "" {
-            result += "    " + ANSI_BOLD + clip(r.header[idx], 10) + ANSI_END + ":\t" + str + "\n"
+			result += "    " + ANSI_BOLD + clip(r.header[idx], 10) + ANSI_END + ":\t" + str + "\n"
 		}
 	}
-	return result[:len(result)]
+	return result[:len(result)-1]
 }
 
 func (r row) Content() string {
@@ -138,10 +137,14 @@ func colorSubstrings(s string, subs []string) string {
 
 // Searches a CSV for a given string, and shows those rows (not file lines)
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: seer [CSV file to search] [... search keywords]")
+		os.Exit(1)
+	}
+
 	fileName := os.Args[1]
 	args := os.Args[2:]
 
-	// open file
 	fileReader, err := os.Open(fileName)
 	rows, err := searchCSV(fileReader)
 
