@@ -14,6 +14,7 @@ const ANSI_UNDER string = "\033[4m"
 const ANSI_COLOR string = "\u001b[31m"
 
 type row struct {
+	header          []string // pointer to the header row string slice
 	startLineNumber int      // line number of the first line of this row in the source file
 	values          []string // values of the row, divided into each column
 }
@@ -45,6 +46,7 @@ func searchCSV(source io.Reader) (rows []row, err error) {
 					curStr = []byte{}
 				}
 			case '\n': // new CSV rows
+				curLineNumber++
 				if inQuotedStr {
 					curStr = append(curStr, char)
 				} else {
@@ -53,7 +55,6 @@ func searchCSV(source io.Reader) (rows []row, err error) {
 					curStr = []byte{}
 
 					rows = append(rows, curRow)
-					curLineNumber++
 					curRow = row{
 						startLineNumber: curLineNumber,
 						values:          []string{},
@@ -75,6 +76,10 @@ func searchCSV(source io.Reader) (rows []row, err error) {
 			return rows, err
 		}
 	}
+	headers, rows := rows[0].values, rows[1:]
+	for idx := range rows {
+		rows[idx].header = headers
+	}
 	return
 }
 
@@ -84,12 +89,22 @@ func check(e error) {
 	}
 }
 
+func clip(s string, max int) string {
+    if max > len(s) {
+        return s
+    } else {
+        return s[:max]
+    }
+}
+
 func (r row) String() string {
-	result := strconv.Itoa(r.startLineNumber) + ":\t"
-	for _, str := range r.values {
-		result += str + "\n"
+	result := ANSI_UNDER + "Line " + strconv.Itoa(r.startLineNumber) + ":\n" + ANSI_END
+	for idx, str := range r.values {
+		if str != "" {
+            result += "    " + ANSI_BOLD + clip(r.header[idx], 10) + ANSI_END + ":\t" + str + "\n"
+		}
 	}
-	return result[:len(result)-1] // remove trailing comma
+	return result[:len(result)]
 }
 
 func (r row) Content() string {
@@ -110,7 +125,7 @@ func (r row) Matches(keywords []string) bool {
 }
 
 func colorSubstring(s, sub string) string {
-	return strings.Replace(s, sub, ANSI_COLOR + ANSI_BOLD +sub+ANSI_END, -1)
+	return strings.Replace(s, sub, ANSI_COLOR+ANSI_BOLD+sub+ANSI_END, -1)
 }
 
 func colorSubstrings(s string, subs []string) string {
@@ -130,12 +145,16 @@ func main() {
 	fileReader, err := os.Open(fileName)
 	rows, err := searchCSV(fileReader)
 
-	fmt.Println(ANSI_UNDER + "Matched rows:" + ANSI_END)
+	matchedRows := []row{}
 	for _, r := range rows {
 		if r.Matches(args) {
-			fmt.Println(colorSubstrings(r.String(), args))
+			matchedRows = append(matchedRows, r)
 		}
 	}
 
+	fmt.Println(ANSI_UNDER + strconv.Itoa(len(matchedRows)) + " Matched rows:\n" + ANSI_END)
+	for _, r := range matchedRows {
+		fmt.Println(colorSubstrings(r.String(), args))
+	}
 	check(err)
 }
