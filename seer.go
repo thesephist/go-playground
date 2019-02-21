@@ -158,6 +158,7 @@ func main() {
 	fmt.Println(ANSI_UNDER + strconv.Itoa(len(matchedRows)) + " Matched rows:\n" + ANSI_END)
 	for _, r := range matchedRows {
 		fmt.Println(colorSubstrings(r.String(), args))
+		fmt.Println()
 	}
 	check(err)
 }
