@@ -10,22 +10,21 @@ import (
 const ANSI_BLUE string = "\u001b[34m"
 const ANSI_END string = "\033[0m"
 
-type factorList []int
-
-func expChar(exp int) string {
+func makeExp(exp int) string {
 	EXP_CHARS := []string{"⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"}
 
 	s := ""
 	for exp > 0 {
-		s = string(EXP_CHARS[exp%10]) + s
-		exp /= 10
+		s, exp = EXP_CHARS[exp%10]+s, exp/10
 	}
 	return s
 }
 
+type factorList []int
+
 func (factors factorList) String() string {
 	parts := []string{}
-	last, lastExp := 0, 1
+	last, lastExp := 1, 1
 	for _, f := range factors {
 		if last == f {
 			lastExp++
@@ -33,7 +32,7 @@ func (factors factorList) String() string {
 			if lastExp == 1 {
 				parts = append(parts, strconv.Itoa(last))
 			} else {
-				parts = append(parts, strconv.Itoa(last)+expChar(lastExp))
+				parts = append(parts, strconv.Itoa(last)+makeExp(lastExp))
 			}
 			last = f
 			lastExp = 1
@@ -42,8 +41,9 @@ func (factors factorList) String() string {
 	if lastExp == 1 {
 		parts = append(parts, strconv.Itoa(last))
 	} else {
-		parts = append(parts, strconv.Itoa(last)+expChar(lastExp))
+		parts = append(parts, strconv.Itoa(last)+makeExp(lastExp))
 	}
+	// 0th element is always 1 to power of 1, which is meaningless
 	return strings.Join(parts[1:], " × ")
 }
 
@@ -51,6 +51,7 @@ func primeFactorize(numberToFactorize int) (factors factorList) {
 	if numberToFactorize <= 2 {
 		return []int{numberToFactorize}
 	}
+
 	// potential optimization: only check when k is prime
 	n, k := numberToFactorize, 2
 	factors = []int{}
@@ -64,6 +65,7 @@ func primeFactorize(numberToFactorize int) (factors factorList) {
 		}
 		k++
 	}
+
 	// should never happen
 	return
 }
@@ -75,7 +77,7 @@ func main() {
 
 		if err != nil {
 			fmt.Println(input, "isn't a valid number to factorize!")
-			os.Exit(1)
+			continue
 		}
 
 		factors := primeFactorize(numberToFactorize)
